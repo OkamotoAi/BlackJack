@@ -1,11 +1,74 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="utf-8">
     <title>ブラックジャック</title>
-    <script src="./game.js"></script>
-    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        let mycost = 0
+        let mycard = []
+        let dealcost = 0
+        let dealcard = []
+
+        //すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
+        let already = Array(52)
+        already.fill(0)
+
+
+        //ディーラーとプレイヤー全員に２枚ずつカードが配られる
+        function init() {
+            
+
+            distribution()
+            distribution()
+
+            calc()
+        }
+
+        //自分のカードの合計値が21に近づくよう、カードを追加したり、追加しないかを決める
+        //プレイヤーはカードの合計値が21を超えない限り、好きなだけカードを追加できる
+        function hit() {
+            distribution()
+        }
+
+        function stand() {
+
+        }
+
+        //カードを1枚配る
+        function distribution() {
+            let newcard = 0
+            do{
+                newcard = Math.floor(Math.random() * 51 + 1)
+
+            }while(already[newcard] == 1);
+            already[newcard] = 1
+            
+            mycard.push(newcard)
+            console.log("手札に追加：" + newcard)
+            console.log("スートは"+ Math.ceil(newcard/13) +" 数字は"+(newcard%13))
+            calc(newcard%13)
+        }
+
+
+
+        //カードの合計値が21を超えてしまった時点で、その場で負けが確定する
+        function calc(num) {
+            if(num == 0){//13
+
+            }
+            if (num == 1) {
+
+            }
+        }
+
+
+
+    </script>
+
 </head>
+
 <body onload="init()">
     <div id="GameArea">
         <div id="DealerCard"></div>
@@ -14,6 +77,12 @@
     </div>
     <button type="button" onclick="hit()">ヒット</button>
     <button type="button" onclick="stand()">スタンド</button>
-    
+
+    <p>
+        ゲームの説明
+
+    </p>
+
 </body>
-</hml>
+
+</html>
