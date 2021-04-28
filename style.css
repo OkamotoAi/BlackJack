@@ -1,0 +1,26 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+#head{
+    height: 100px;
+}
+
+#GameArea{
+    margin: 5%;
+}
+
+button{
+    background-color: salmon;
+    margin:5%;
+
+}
+
+p{
+    background-color:antiquewhite;
+}
+
+img{
+    width:100px;
+}

@@ -6,10 +6,9 @@
     <title>ブラックジャック</title>
     <link rel="stylesheet" href="style.css">
     <script>
-        let mycost = 0
-        let mycard = []
-        let dealcost = 0
-        let dealcard = []
+        let mycard = [0]//0番目はコスト，1番目からは取得したカード
+        let myAce = 0 //A引いた回数
+        let dealcard = [0]
 
         //すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
         let already = Array(52)
@@ -18,51 +17,150 @@
 
         //ディーラーとプレイヤー全員に２枚ずつカードが配られる
         function init() {
-            
 
             distribution()
             distribution()
-
-            calc()
         }
-
-        //自分のカードの合計値が21に近づくよう、カードを追加したり、追加しないかを決める
-        //プレイヤーはカードの合計値が21を超えない限り、好きなだけカードを追加できる
+        
+        //カードを1枚引く
         function hit() {
             distribution()
         }
 
+        
         function stand() {
-
+            
+            if(mycard[0] > 21){
+                alert("You Lose...")
+            }else{
+                alert("You win!")
+            }
         }
 
+        let newcard = 0
         //カードを1枚配る
         function distribution() {
-            let newcard = 0
-            do{
+            
+            do {
                 newcard = Math.floor(Math.random() * 51 + 1)
 
-            }while(already[newcard] == 1);
+            } while (already[newcard] == 1);
             already[newcard] = 1
-            
+
             mycard.push(newcard)
-            console.log("手札に追加：" + newcard)
-            console.log("スートは"+ Math.ceil(newcard/13) +" 数字は"+(newcard%13))
-            calc(newcard%13)
+            console.log()
+            console.log("追加:" + newcard+" スート:" + Math.ceil(newcard / 13) + " 数字:" + (newcard % 13))
+            display(newcard)
+            calc(newcard % 13)
+            　
+            
+        }
+
+        function lose(){
+            alert("You Lose...")
+            
         }
 
 
 
-        //カードの合計値が21を超えてしまった時点で、その場で負けが確定する
+        //手札の合計値の計算
         function calc(num) {
-            if(num == 0){//13
+            if (num == 0||num == 10||num == 11||num == 12) {//10~13,1
+                mycard[0] += 10
+            }else if(num == 1){
+                if(mycard[0]+10 > 21){
+                    mycard[0] += 1
+                }else{
+                    mycard[0] += 10
+                    myAce++
+                }
+                
+            }else{
+                mycard[0] += num
+            }
+
+            //カードの合計値が21を超えてしまった時点で、その場で負けが確定する
+            
+            if(mycard[0] > 21){
+                if(myAce != 0){
+                    mycard[0] -= 9
+                    myAce--
+                }else{
+                    setTimeout(lose,300)
+                    
+                }
+                
 
             }
-            if (num == 1) {
-
-            }
+            document.getElementById("point").innerText = mycard[0]
+            console.log("合計値:"+mycard[0])
+            
+            
         }
 
+        //引いたカードを画面に表示する
+        function display(num) {
+            let suit;
+            /*なぜか動かなかったSwich文
+            swich(formula){
+                case 1:
+                    suit = "heart"
+                    break;
+                case 2:
+                    suit = "diamond"
+                    break;
+                case 3:
+                    suit = "club"
+                    break;
+                case 4:
+                    suit = "spade"
+                    break;
+
+            }
+            swich(num % 13){
+                case 0:
+                    lank = 13
+                break;
+                case 10:
+                case 11:
+                case 12:
+                    lank = num % 13
+                    break;
+                default:
+                    lank = "0" + num % 13
+                    break;
+
+            }*/
+            if(Math.ceil(num / 13) == 1){
+                suit = "heart"
+
+            }else if(Math.ceil(num / 13) == 2){
+                suit = "diamond"
+
+            }else if(Math.ceil(num / 13) == 3){
+                suit = "club"
+
+            }else if(Math.ceil(num / 13) == 4){
+                suit = "spade"
+
+            }
+
+            let lank
+
+            if(num % 13 == 0){
+                lank = 13
+            }else if(num % 13 == 10||num % 13 == 11||num % 13 == 12){
+                lank = num % 13
+            }else{
+                lank = "0" + num % 13
+            }
+            isrc = "cards/card_"+suit+"_"+lank+".png"
+            console.log(isrc+"を表示") 
+            //document.getElementById('p1').innerHTML = '<img src=isrc alt="サンプル画像">';
+            let id = "p" + mycard.length
+            var img = document.getElementById(id); 
+            img.src = isrc
+        }
 
 
     </script>
@@ -70,13 +168,32 @@
 </head>
 
 <body onload="init()">
-    <div id="GameArea">
-        <div id="DealerCard"></div>
-        <div id=MyCard"></div>
+    <div id="head">
+        <button type="button" onclick="" id="home">RETURN
+            HOME</button>
+        手札合計:<span id="point">0</span>
+    </div>
+
+    <div class="GameArea">
+        <div id="DealerCard">
+            <p id ="d1"></p>
+        </div>
+        <div id=PlayerCard">
+            <!---ここの画像表示floatとか使って綺麗にしたい-->
+            <img id="p1"> 
+            <img id="p2"> 
+            <img id="p3"> 
+            <img id="p4"> 
+            <img id="p5"> 
+            <img id="p6"> 
+            <img id="p7"> 
+        </div>
 
     </div>
-    <button type="button" onclick="hit()">ヒット</button>
-    <button type="button" onclick="stand()">スタンド</button>
+    <button type="button" id="hit"
+        onclick="hit()">ヒット</button>
+    <button type="button" id="stand"
+        onclick="stand()">スタンド</button>
 
     <p>
         ゲームの説明
