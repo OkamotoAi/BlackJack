@@ -6,161 +6,187 @@
     <title>ブラックジャック</title>
     <link rel="stylesheet" href="style.css">
     <script>
-        let mycard = [0]//0番目はコスト，1番目からは取得したカード
-        let myAce = 0 //A引いた回数
-        let dealcard = [0]
+        //let mycard = [0]//0番目はコスト，1番目からは取得したカード
+        //let myAce = 0 //A引いた回数
+        //let myalready = Array(52)
+        //myalready.fill(0)
 
-        //すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
-        let already = Array(52)
-        already.fill(0)
+        class player {
+            card = [0]//0番目はコスト，1番目からは取得したカード
+            Ace = 0 //Aを引いた回数
+            constructor(name) {
+                this.name = name;
+            }
+
+
+        }
+
+        let me = new player("me")//自分
+        let deal = new player("deal")//ディーラークラス
+        already = Array(52).fill(0)　//すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
+        //const before = 0
+        const playing = 1
+        const end = 2
+        let status = 0
+
+
+
 
 
         //ディーラーとプレイヤー全員に２枚ずつカードが配られる
         function init() {
+            status = playing
+            distribution(me)
+            distribution(me)
+            distribution(deal)
 
-            distribution()
-            distribution()
+
         }
-        
+
         //カードを1枚引く
         function hit() {
-            distribution()
-        }
-
-        
-        function stand() {
-            
-            if(mycard[0] > 21){
-                alert("You Lose...")
-            }else{
-                alert("You win!")
+            if (status == playing) {
+                distribution(me)
+            } else {
+                console.log("game was end")
             }
         }
 
+
+        function stand() {
+            while (deal.card[0] < 17) {
+                distribution(deal)
+            }
+
+            if (me.card[0] > 21) {
+                setTimeout(lose, 500)
+            }else if(deal.card[0] > 21){
+                setTimeout(win, 500)
+            } else if (me.card[0] > deal.card[0]) {
+                setTimeout(win, 500)
+            } else if (me.card[0] < deal.card[0]) {
+                setTimeout(lose, 500)
+            } else if (me.card.length > deal.card.length) {
+                setTimeout(lose, 300)
+            } else if (me.card.length < deal.card.length) {
+
+            } else {
+                console.exception("計算できません")
+            }
+
+        }
+
+
         let newcard = 0
         //カードを1枚配る
-        function distribution() {
-            
+        function distribution(p) {
+
             do {
                 newcard = Math.floor(Math.random() * 51 + 1)
 
             } while (already[newcard] == 1);
             already[newcard] = 1
 
-            mycard.push(newcard)
+            p.card.push(newcard)
             console.log()
-            console.log("追加:" + newcard+" スート:" + Math.ceil(newcard / 13) + " 数字:" + (newcard % 13))
-            display(newcard)
-            calc(newcard % 13)
-            　
-            
+            console.log(p.name + " 追加:" + newcard + " スート:" + Math.ceil(newcard / 13) + " 数字:" + (newcard % 13))
+            display(newcard, p)
+
+
+            calc(newcard % 13, p)
+
+
         }
 
-        function lose(){
-            alert("You Lose...")
-            
+        function lose() {
+            alert("You Lose...\nディーラーの手札は"+deal.card[0]+"でした")
+            status = end
+
+        }
+
+        function win() {
+            alert("You win!\nディーラーの手札は"+deal.card[0]+"でした")
+            status = end
         }
 
 
 
         //手札の合計値の計算
-        function calc(num) {
-            if (num == 0||num == 10||num == 11||num == 12) {//10~13,1
-                mycard[0] += 10
-            }else if(num == 1){
-                if(mycard[0]+10 > 21){
-                    mycard[0] += 1
-                }else{
-                    mycard[0] += 10
-                    myAce++
+        function calc(num, p) {
+            if (num == 0 || num == 10 || num == 11 || num == 12) {//10~13,1
+                p.card[0] += 10
+            } else if (num == 1) {
+                if (p.card[0] + 10 > 21) {
+                    p.card[0] += 1
+                } else {
+                    p.card[0] += 10
+                    p.Ace++
                 }
-                
-            }else{
-                mycard[0] += num
+
+            } else {
+                p.card[0] += num
             }
 
             //カードの合計値が21を超えてしまった時点で、その場で負けが確定する
-            
-            if(mycard[0] > 21){
-                if(myAce != 0){
-                    mycard[0] -= 9
-                    myAce--
-                }else{
-                    setTimeout(lose,300)
-                    
-                }
-                
 
+            if (p.name != deal) {
+                if (p.card[0] > 21) {
+                    if (p.Ace != 0) {
+                        p.card[0] -= 9
+                        p.Ace--
+                    } else {
+                        //ここですぐ負け表示するか(lose)，dealの手札見せてから負けか(stand)
+                        setTimeout(stand, 500)
+
+                    }
+
+                }
+                document.getElementById("point").innerText = me.card[0]
+                console.log(p.name + " 合計値:" + p.card[0])
             }
-            document.getElementById("point").innerText = mycard[0]
-            console.log("合計値:"+mycard[0])
-            
-            
+
+
         }
 
+
         //引いたカードを画面に表示する
-        function display(num) {
+        function display(num, p) {
             let suit;
-            /*なぜか動かなかったSwich文
-            swich(formula){
-                case 1:
-                    suit = "heart"
-                    break;
-                case 2:
-                    suit = "diamond"
-                    break;
-                case 3:
-                    suit = "club"
-                    break;
-                case 4:
-                    suit = "spade"
-                    break;
-
-            }
-            swich(num % 13){
-                case 0:
-                    lank = 13
-                break;
-                case 10:
-                case 11:
-                case 12:
-                    lank = num % 13
-                    break;
-                default:
-                    lank = "0" + num % 13
-                    break;
-
-            }*/
-            if(Math.ceil(num / 13) == 1){
+            if (Math.ceil(num / 13) == 1) {
                 suit = "heart"
 
-            }else if(Math.ceil(num / 13) == 2){
+            } else if (Math.ceil(num / 13) == 2) {
                 suit = "diamond"
 
-            }else if(Math.ceil(num / 13) == 3){
+            } else if (Math.ceil(num / 13) == 3) {
                 suit = "club"
 
-            }else if(Math.ceil(num / 13) == 4){
+            } else if (Math.ceil(num / 13) == 4) {
                 suit = "spade"
 
             }
 
             let lank
-
-            if(num % 13 == 0){
+            if (num % 13 == 0) {
                 lank = 13
-            }else if(num % 13 == 10||num % 13 == 11||num % 13 == 12){
+            } else if (num % 13 == 10 || num % 13 == 11 || num % 13 == 12) {
                 lank = num % 13
-            }else{
+            } else {
                 lank = "0" + num % 13
             }
-            isrc = "cards/card_"+suit+"_"+lank+".png"
-            console.log(isrc+"を表示") 
+            isrc = "cards/card_" + suit + "_" + lank + ".png"
+            console.log(isrc + "を表示")
             //document.getElementById('p1').innerHTML = '<img src=isrc alt="サンプル画像">';
-            let id = "p" + mycard.length
-            var img = document.getElementById(id); 
+            let id
+            if (p.name == "deal") {
+                id = "d" + (p.card.length - 1)
+            } else {
+                id = "p" + (p.card.length - 1)
+            }
+            var img = document.getElementById(id);
             img.src = isrc
         }
+
 
 
     </script>
@@ -176,17 +202,23 @@
 
     <div class="GameArea">
         <div id="DealerCard">
-            <p id ="d1"></p>
+            <img id="d1">
+            <img id="d2">
+            <img id="d3">
+            <img id="d4">
+            <img id="d5">
+            <img id="d6">
+            <img id="d7">
         </div>
-        <div id=PlayerCard">
+        <div id="PlayerCard">
             <!---ここの画像表示floatとか使って綺麗にしたい-->
-            <img id="p1"> 
-            <img id="p2"> 
-            <img id="p3"> 
-            <img id="p4"> 
-            <img id="p5"> 
-            <img id="p6"> 
-            <img id="p7"> 
+            <img id="p1">
+            <img id="p2">
+            <img id="p3">
+            <img id="p4">
+            <img id="p5">
+            <img id="p6">
+            <img id="p7">
         </div>
 
     </div>
@@ -194,6 +226,9 @@
         onclick="hit()">ヒット</button>
     <button type="button" id="stand"
         onclick="stand()">スタンド</button>
+    <button type="button" id="replay"
+        onclick="init()">もう一度プレイする</button>
+
 
     <p>
         ゲームの説明
