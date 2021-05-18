@@ -1,204 +1,255 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="utf-8">
     <title>ブラックジャック</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
     <script>
-        let mycard = [0]//0番目はコスト，1番目からは取得したカード
-        let myAce = 0 //A引いた回数
-        let dealcard = [0]
-
-        //すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
-        let already = Array(52)
-        already.fill(0)
-
-
-        //ディーラーとプレイヤー全員に２枚ずつカードが配られる
-        function init() {
-
-            distribution()
-            distribution()
-        }
-        
-        //カードを1枚引く
-        function hit() {
-            distribution()
-        }
-
-        
-        function stand() {
-            
-            if(mycard[0] > 21){
-                alert("You Lose...")
-            }else{
-                alert("You win!")
+        class player {
+            card = [0]//0番目はコスト，1番目からは取得したカード
+            Ace = 0 //Aを引いた回数
+            constructor(name) {
+                this.name = name;
             }
         }
 
+        const playername = sessionStorage.getItem("playerName");
+        let me = new player(playername)//自分
+        let deal = new player("deal")//ディーラークラス
+        already = Array(52)　//すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
+        const before = 0
+        const playing = 1
+        const end = 2
+        let status = before
+
+        //ディーラー1 とプレイヤー２枚ずつカードが配られる
+        function start() {
+            me.card = [0]
+            me.Ace = 0
+            deal.card = [0]
+            deal.Ace = 0
+            already.fill(0)
+            status = playing
+            distribution(me)
+            distribution(me)
+            distribution(deal)
+
+        }
+
+        //カードを1枚引く
+        function hit() {
+            if (status == playing) {
+                distribution(me)
+            } else {
+                console.log("game was end")
+            }
+        }
+
+
+        function stand() {
+            document.getElementById("hit").className = "passive"
+            document.getElementById("stand").className = "passive"
+            
+            while (deal.card[0] < 17) {
+                distribution(deal)
+            }
+
+            if (me.card[0] > 21) {
+                setTimeout(lose, 500)
+            } else if (deal.card[0] > 21) {
+                setTimeout(win, 500)
+            } else if (me.card[0] > deal.card[0]) {
+                setTimeout(win, 500)
+            } else if (me.card[0] < deal.card[0]) {
+                setTimeout(lose, 500)
+            } else if (me.card.length > deal.card.length) {
+                setTimeout(lose, 300)
+            } else if (me.card.length < deal.card.length) {
+                setTimeout(win, 300)
+            } else {
+                console.exception("計算できません")
+            }
+
+        }
+
+
         let newcard = 0
         //カードを1枚配る
-        function distribution() {
-            
+        function distribution(p) {
+
             do {
                 newcard = Math.floor(Math.random() * 51 + 1)
 
             } while (already[newcard] == 1);
             already[newcard] = 1
 
-            mycard.push(newcard)
+            p.card.push(newcard)
             console.log()
-            console.log("追加:" + newcard+" スート:" + Math.ceil(newcard / 13) + " 数字:" + (newcard % 13))
-            display(newcard)
-            calc(newcard % 13)
-            　
-            
+            console.log(p.name + " 追加:" + newcard + " スート:" + Math.ceil(newcard / 13) + " 数字:" + (newcard % 13))
+            display(newcard, p)
+
+
+            calc(newcard % 13, p)
+
+
         }
 
-        function lose(){
-            alert("You Lose...")
-            
+        //負けた時の処理
+        function lose() {
+            alert("You Lose...\nディーラーの手札は" + deal.card[0] + "でした")
+            status = end
+            document.getElementById("replay").className = "active"
+
+        }
+
+        //勝った時の処理
+        function win() {
+            alert("You win!\nディーラーの手札は" + deal.card[0] + "でした")
+            status = end
+            document.getElementById("replay").className = "active"
+
         }
 
 
 
         //手札の合計値の計算
-        function calc(num) {
-            if (num == 0||num == 10||num == 11||num == 12) {//10~13,1
-                mycard[0] += 10
-            }else if(num == 1){
-                if(mycard[0]+10 > 21){
-                    mycard[0] += 1
-                }else{
-                    mycard[0] += 10
-                    myAce++
+        function calc(num, p) {
+            if (num == 0 || num == 10 || num == 11 || num == 12) {//10~13,1
+                p.card[0] += 10
+            } else if (num == 1) {
+                if (p.card[0] + 11 > 21) {
+                    p.card[0] += 1
+                } else {
+                    p.card[0] += 11
+                    p.Ace++
                 }
-                
-            }else{
-                mycard[0] += num
+
+            } else {
+                p.card[0] += num
             }
 
             //カードの合計値が21を超えてしまった時点で、その場で負けが確定する
-            
-            if(mycard[0] > 21){
-                if(myAce != 0){
-                    mycard[0] -= 9
-                    myAce--
-                }else{
-                    setTimeout(lose,300)
-                    
-                }
-                
+            if (p.name != deal) {
+                if (p.card[0] > 21) {
+                    if (p.Ace != 0) {
+                        p.card[0] -= 9
+                        p.Ace--
+                    } else {
+                        //ここですぐ負け表示するか(lose)，dealの手札見せてから負けか(stand)
+                        setTimeout(stand, 500)
 
+                    }
+
+                }
+                document.getElementById("point").innerText = me.card[0]
+                console.log(p.name + " 合計値:" + p.card[0])
             }
-            document.getElementById("point").innerText = mycard[0]
-            console.log("合計値:"+mycard[0])
-            
-            
+
+
         }
 
+
         //引いたカードを画面に表示する
-        function display(num) {
+        function display(num, p) {
             let suit;
-            /*なぜか動かなかったSwich文
-            swich(formula){
-                case 1:
-                    suit = "heart"
-                    break;
-                case 2:
-                    suit = "diamond"
-                    break;
-                case 3:
-                    suit = "club"
-                    break;
-                case 4:
-                    suit = "spade"
-                    break;
-
-            }
-            swich(num % 13){
-                case 0:
-                    lank = 13
-                break;
-                case 10:
-                case 11:
-                case 12:
-                    lank = num % 13
-                    break;
-                default:
-                    lank = "0" + num % 13
-                    break;
-
-            }*/
-            if(Math.ceil(num / 13) == 1){
+            if (Math.ceil(num / 13) == 1) {
                 suit = "heart"
 
-            }else if(Math.ceil(num / 13) == 2){
+            } else if (Math.ceil(num / 13) == 2) {
                 suit = "diamond"
 
-            }else if(Math.ceil(num / 13) == 3){
+            } else if (Math.ceil(num / 13) == 3) {
                 suit = "club"
 
-            }else if(Math.ceil(num / 13) == 4){
+            } else if (Math.ceil(num / 13) == 4) {
                 suit = "spade"
 
             }
 
             let lank
-
-            if(num % 13 == 0){
+            if (num % 13 == 0) {
                 lank = 13
-            }else if(num % 13 == 10||num % 13 == 11||num % 13 == 12){
+            } else if (num % 13 == 10 || num % 13 == 11 || num % 13 == 12) {
                 lank = num % 13
-            }else{
+            } else {
                 lank = "0" + num % 13
             }
-            isrc = "cards/card_"+suit+"_"+lank+".png"
-            console.log(isrc+"を表示") 
+            isrc = "cards/card_" + suit + "_" + lank + ".png"
+            console.log(isrc + "を表示")
             //document.getElementById('p1').innerHTML = '<img src=isrc alt="サンプル画像">';
-            let id = "p" + mycard.length
-            var img = document.getElementById(id); 
+            let id
+            if (p.name == "deal") {
+                id = "d" + (p.card.length - 1)
+                document.getElementById(id).className = "d active"
+            } else {
+                id = "p" + (p.card.length - 1)
+                document.getElementById(id).className = "p active"
+
+            }
+            var img = document.getElementById(id)
             img.src = isrc
         }
+
 
 
     </script>
 
 </head>
 
-<body onload="init()">
-    <div id="head">
-        <button type="button" onclick="" id="home">RETURN
-            HOME</button>
-        手札合計:<span id="point">0</span>
-    </div>
-
-    <div class="GameArea">
-        <div id="DealerCard">
-            <p id ="d1"></p>
+<body onload="start()">
+    <div class="box">
+        <div class="home">
+            <button type="button" onclick=""
+                id="home"><img src="img/home.png" alt=""></button>
         </div>
-        <div id=PlayerCard">
-            <!---ここの画像表示floatとか使って綺麗にしたい-->
-            <img id="p1"> 
-            <img id="p2"> 
-            <img id="p3"> 
-            <img id="p4"> 
-            <img id="p5"> 
-            <img id="p6"> 
-            <img id="p7"> 
+        <div class=head>BlackJack</div>
+        <div class="status">
+            手札合計:<span id="point">0</span>
         </div>
 
+            <div id="DealerCard" class="dealercard">
+                <img id="d1" alt="" class="d active">
+                <img id="d2" alt="" class="d passive">
+                <img id="d3" alt="" class="d passive">
+                <img id="d4" alt="" class="d passive">
+                <img id="d5" alt="" class="d passive">
+                <img id="d6" alt="" class="d passive">
+                <img id="d7" alt="" class="d passive">
+                <img id="d8" alt="" class="d passive">
+                <img id="d9" alt="" class="d passive">
+                <img id="d10" alt="" class="d passive">
+            </div>
+            <div id="PlayerCard" class="playercard">
+                <!---ここの画像表示floatとか使って綺麗にしたい-->
+                <img id="p1" alt="" class="p active">
+                <img id="p2" alt="" class="p active">
+                <img id="p3" alt="" class="p passive">
+                <img id="p4" alt="" class="p passive">
+                <img id="p5" alt="" class="p passive">
+                <img id="p6" alt="" class="p passive">
+                <img id="p7" alt="" class="p passive">
+                <img id="p8" alt="" class="p passive">
+                <img id="p9" alt="" class="p passive">
+                <img id="p10" alt="" class="p passive">
+            </div>
+
+        
+        <div class="btn">
+            <button type="button" id="hit" class="active"
+                onclick="hit() "><img src="img/hit.png" alt=""></button>
+            <button type="button" id="stand" class="active"
+                onclick="stand()"><img src="img/stand.png" alt=""></button>
+            <button type="button" id="replay" class="passive"
+                onclick="start()"><img src="img/replay.png"></button>
+        </div>
+
+        <p>
+            Hit・・・カードを引くことができます<br>
+            Stand・・・カードを引くのをやめ，ディーラーと勝負します<br>
+
+        </p>
     </div>
-    <button type="button" id="hit"
-        onclick="hit()">ヒット</button>
-    <button type="button" id="stand"
-        onclick="stand()">スタンド</button>
-
-    <p>
-        ゲームの説明
-
-    </p>
 
 </body>
 
