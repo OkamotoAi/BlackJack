@@ -14,8 +14,11 @@
             }
         }
 
-        const playername = sessionStorage.getItem("playerName");
+        const playername = sessionStorage.getItem("playerName")
+        //for Debug
+        //const playername = "あなた"
         let me = new player(playername)//自分
+        
         let deal = new player("deal")//ディーラークラス
         already = Array(52)　//すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
         const before = 0
@@ -25,6 +28,7 @@
 
 
         function init(){
+            document.getElementById("name").innerText = (playername)
             document.getElementById("replay").className = "passive"
             document.getElementById("hit").className = "active"
             document.getElementById("stand").className = "active"
@@ -38,7 +42,6 @@
             for(var i = 1;i<=10;i++){
                 document.getElementById("d"+i).className = "d passive"
                 document.getElementById("p"+i).className = "p passive"
-                console.log(document.getElementById("d"+i).className)
             }
             start()
         }
@@ -54,14 +57,15 @@
                 if((me.card[2] % 13) >= 10){
                     document.getElementById("hit").className = "passive"
                     document.getElementById("stand").className = "passive"
-                    setTimeout(winAtBlackjack, 500)
+                    setTimeout(winAtBlackjack, 800)
                 }
             }
             if((me.card[2] % 13) == 1){
                 if((me.card[1] % 13) >= 10){
                     document.getElementById("hit").className = "passive"
                     document.getElementById("stand").className = "passive"
-                    setTimeout(winAtBlackjack, 500)
+                    setTimeout(winAtBlackjack, 800)
+                    
                 }
             }
 
@@ -77,29 +81,43 @@
             }
         }
 
-
-        function stand() {
-            document.getElementById("hit").className = "passive"
-            document.getElementById("stand").className = "passive"
-            
-            while (deal.card[0] < 17) {
+        function dealhit(){
+            console.log("dealhit")
+            for(;deal.card[0] < 17;){
                 distribution(deal)
             }
+            stand()
+        }
 
-            if (me.card[0] > 21) {
-                setTimeout(lose, 500)
-            } else if (deal.card[0] > 21) {
-                setTimeout(win, 500)
-            } else if (me.card[0] > deal.card[0]) {
-                setTimeout(win, 500)
-            } else if (me.card[0] < deal.card[0]) {
-                setTimeout(lose, 500)
-            } else if (me.card.length > deal.card.length) {
-                setTimeout(lose, 300)
-            } else if (me.card.length < deal.card.length) {
-                setTimeout(win, 300)
-            } else {
-                console.exception("計算できません")
+
+        async function stand() {
+            document.getElementById("hit").className = "passive"
+            document.getElementById("stand").className = "passive"
+            if(status == playing){
+                status = end
+                //burstのときはcalcに移動しました
+                if (me.card[0] > 21) {
+                    setTimeout(lose, 500)//1
+                    console.log("プレイヤーのバースト")
+                } else if (deal.card[0] > 21) {
+                    setTimeout(win, 500) //2
+                    console.log("ディーラーのバースト")
+                } else if (me.card[0] > deal.card[0]) {
+                    setTimeout(win, 500)
+                    console.log("合計値勝ち")
+                } else if (me.card[0] < deal.card[0]) {
+                    setTimeout(lose, 500)
+                    console.log("合計値負け")
+                } else if (me.card.length > deal.card.length) {
+                    setTimeout(lose, 500)
+                    console.log("枚数負け")
+                } else if (me.card.length < deal.card.length) {
+                    setTimeout(win, 500)
+                    console.log("枚数勝ち")
+                } else {
+                    setTimeout(draw, 500)
+                    console.log("引き分け")
+                }
             }
 
         }
@@ -112,7 +130,6 @@
             //乱数でカードを引く
             do {
                 newcard = Math.floor(Math.random() * 51 + 1)
-
             } while (already[newcard] == 1);
             already[newcard] = 1
 
@@ -125,7 +142,7 @@
         //負けた時の処理
         function lose() {
             alert("You Lose...\nディーラーの手札は" + deal.card[0] + "でした")
-            status = end
+            
             document.getElementById("replay").className = "active"
 
         }
@@ -139,13 +156,20 @@
         }
 
         function winAtBlackjack(){
-            
+            if(status == playing){
+                status = end
             alert("You win!\nブラックジャックです")
             status = end
             document.getElementById("replay").className = "active"
+            }
 
         }
 
+        function draw(){
+            alert("draw\nディーラーの手札は" + deal.card[0] + "でした")
+            status = end
+            document.getElementById("replay").className = "active"
+        }
 
 
         //手札の合計値の計算
@@ -165,21 +189,19 @@
             }
 
             //カードの合計値が21を超えてしまった時点で、その場で負けが確定する
-            if (p.name != deal) {
-                if (p.card[0] > 21) {
-                    if (p.Ace != 0) {
-                        p.card[0] -= 9
-                        p.Ace--
-                    } else {
-                        //ここですぐ負け表示するか(lose)，dealの手札見せてから負けか(stand)
-                        setTimeout(stand, 500)
-
-                    }
-
+            
+            if (p.card[0] > 21) {
+                if (p.Ace != 0) {
+                    p.card[0] -= 9
+                    p.Ace--
+                } else {
+                    dealhit()
                 }
-                document.getElementById("point").innerText = me.card[0]
-                console.log(p.name + " 合計値:" + p.card[0])
+
             }
+            document.getElementById("point").innerText = me.card[0]
+            console.log(p.name + " 合計値:" + p.card[0])
+            
 
 
         }
@@ -224,7 +246,7 @@
             }
             var img = document.getElementById(id)
             img.src = isrc
-            console.log(id.className + " " + isrc + "を表示")
+            console.log(isrc + "を表示")
         }
 
 
@@ -234,16 +256,16 @@
 </head>
 
 <body onload="init()">
+    <button type="button" onclick=""
+                id="home"><img src="img/home.png" alt=""></button>
+    <img src="img/dealerpic.png" alt="" id="dealerpic">
     <div class="box">
         <div class="home">
-            <button type="button" onclick=""
-                id="home"><img src="img/home.png" alt=""></button>
+            
         </div>
         <div class=head>BlackJack</div>
-        <div class="status">
-            手札合計:<span id="point">0</span>
-        </div>
-
+        
+            
             <div id="DealerCard" class="dealercard">
                 <img id="d1" alt="" class="d active">
                 <img id="d2" alt="" class="d passive">
@@ -257,7 +279,6 @@
                 <img id="d10" alt="" class="d passive">
             </div>
             <div id="PlayerCard" class="playercard">
-                <!---ここの画像表示floatとか使って綺麗にしたい-->
                 <img id="p1" alt="" class="p active">
                 <img id="p2" alt="" class="p active">
                 <img id="p3" alt="" class="p passive">
@@ -269,13 +290,18 @@
                 <img id="p9" alt="" class="p passive">
                 <img id="p10" alt="" class="p passive">
             </div>
+            
 
+            
+        <div class="sum">
+            <span id="name">A</span>の手札の合計値は<span id="point">0</span>です
+        </div>    
         
         <div class="btn">
             <button type="button" id="hit" class="active"
                 onclick="hit() "><img src="img/hit.png" alt=""></button>
             <button type="button" id="stand" class="active"
-                onclick="stand()"><img src="img/stand.png" alt=""></button>
+                onclick="dealhit()"><img src="img/stand.png" alt=""></button>
             <button type="button" id="replay" class="passive"
                 onclick="init()"><img src="img/replay.png"></button>
         </div>
@@ -283,6 +309,7 @@
         <p>
             Hit・・・カードを引くことができます<br>
             Stand・・・カードを引くのをやめ，ディーラーと勝負します<br>
+            ディーラーは手札が16になるまでヒットし続け,17を超えると必ずスタンドします
 
         </p>
     </div>
@@ -290,3 +317,10 @@
 </body>
 
 </html>
+
+
+<!-- 
+    ディーラーとプレイヤーのカードがひとめで区別がつかない
+    カードをめくるやつ
+    winが2回出る
+ -->
