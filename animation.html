@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="./animation.css">
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lettering.js/0.7.0/jquery.lettering.min.js"></script>
+    <script>
+        
+        $(document).ready(function () {
+            $(".title").lettering();
+            $(".button").lettering();
+        });
+
+        $(document).ready(function () {
+            animation();
+        }, 1000);
+
+        $('.button').click(function () {
+            animation();
+        });
+
+
+        function animation() {
+            var title1 = new TimelineMax();
+            
+            title1.staggerFromTo(".title span", 0.5,
+                { ease: Back.easeOut.config(1.7), opacity: 0, bottom: -80 },
+                { ease: Back.easeOut.config(1.7), opacity: 1, bottom: 0 }, 0.05);
+            //title1.to(".title span", 5, { visibility: 'hidden', opacity: 0,delay: 5})
+        }
+    </script>
+</head>
+
+<body>
+    <section class="container">
+        <h1>
+          <span class="title">Player1</span>
+          <span class="title">is Win!</span>
+        </h1>
+      </section>
+</body>
+
+</html>

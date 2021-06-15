@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <title>ブラックジャック</title>
+    <link rel="stylesheet" href="style2.css">
+    <link rel="stylesheet" href="animation2.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.18.0/TweenMax.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lettering.js/0.7.0/jquery.lettering.min.js"></script>
+        
+    <script>
+        class player {
+            id = "d"
+            card = [0]//0番目はコスト，1番目からは取得したカード
+            Ace = 0 //Aを引いた回数
+            stand = 0//Standしたら1 winAtBJで2？
+            winner = 0 //数字が大きい方が勝ちにする
+            constructor(name) {
+                this.name = name;
+            }
+        }
+
+        //const playername1 = sessionStorage.getItem("playerName1")
+        //const playername2 = sessionStorage.getItem("playerName2")
+         const playername1 = "player1"
+         const playername2 = "player2"
+        
+        let p1 = new player(playername1)//自分
+        p1.id = "p1"
+        let p2 = new player(playername2)//自分
+        p2.id = "p2"
+        let deal = new player("deal")//ディーラークラス
+        already = Array(52)　//すでに引かれたカード.1~ハート 14~ダイヤ 27~クローバー 40~スペード 
+        const before = 0
+        const playing = 1
+        const end = 2
+        let status
+        let target
+
+        function init() {
+            target = document.getElementById("fadeLayer")
+            target.style.visibility = "hidden"
+            document.getElementById("p1name").innerText = (playername1)
+            document.getElementById("p2name").innerText = (playername2)
+            document.getElementById("replay").className = "passive"
+            document.getElementById("p1hit").className = "active"
+            document.getElementById("p1stand").className = "active"
+            document.getElementById("p2hit").className = "active"
+            document.getElementById("p2stand").className = "active"
+            document.getElementById("p1aniname").innerText = ""
+            document.getElementById("p1animsg").innerText = ""
+            document.getElementById("p2aniname").innerText = ""
+            document.getElementById("p2animsg").innerText = ""
+            p1.card = [0]
+            p1.Ace = 0
+            p1.stand = 0
+            p2.card = [0]
+            p2.Ace = 0
+            p2.stand = 0
+            deal.card = [0]
+            deal.Ace = 0
+            already.fill(0)
+            status = before
+
+            for (var i = 1; i <= 10; i++) {
+                document.getElementById("d" + i).className = "d passive"
+                document.getElementById("p1-" + i).className = "p passive"
+                document.getElementById("p2-" + i).className = "p passive"
+            }
+            start()
+        }
+
+        //ディーラー1 とプレイヤー２枚ずつカードが配られる
+        function start() {
+            status = playing
+            distribution(p1)
+            distribution(p1)
+            distribution(p2)
+            distribution(p2)
+            distribution(deal)
+            document.getElementById("d2").src = "cards/card_back.png"
+            document.getElementById("d2").className = "d active"
+            
+            if(p1.card[0] == 21){
+                standflag(p1)
+            }
+            if(p2.card[0] == 21){
+                standflag(p2)
+            }
+
+            /*if (p1.card[1] % 13 == 1 && p1.card[2] % 13 >= 10) {
+                document.getElementById("p1hit").className = "passive"
+                document.getElementById("p1stand").className = "passive"
+                winAtBlackjack, 800, p1)
+            }
+
+            if (p1.card[2] % 13 == 1 && p1.card[1] % 13 >= 10) {
+                document.getElementById("p1hit").className = "passive"
+                document.getElementById("p1stand").className = "passive"
+                winAtBlackjack, 800, p1)
+
+            }
+            if (p2.card[1] % 13 == 1 && p2.card[2] % 13 >= 10) {
+                document.getElementById("p2hit").className = "passive"
+                document.getElementById("p2stand").className = "passive"
+                winAtBlackjack, 800, p2)
+
+            }
+            if (p2.card[2] % 13 == 1 && p2.card[1] % 13 >= 10) {
+                document.getElementById("p2hit").className = "passive"
+                document.getElementById("p2stand").className = "passive"
+                winAtBlackjack, 800, p2)
+
+            }*/
+        }
+
+
+
+
+        //カードを1枚引く
+        function hit(p) {
+            if (status == playing) {
+                distribution(p)
+            } else {
+                console.log("game was end")
+            }
+        }
+
+        function dealhit() {
+            console.log("dealhit")
+            for (; deal.card[0] < 17;) {
+                distribution(deal)
+            }
+            stand()
+        }
+
+        function standflag(p) {
+            p.stand = 1
+            if (p.name == playername1) {
+                document.getElementById("p1hit").className = "passive"
+                document.getElementById("p1stand").className = "passive"
+
+            } else if (p.name == playername2) {
+                document.getElementById("p2hit").className = "passive"
+                document.getElementById("p2stand").className = "passive"
+            }
+
+            if (p1.stand == 1 && p2.stand == 1) {
+                dealhit()
+            }
+
+        }
+
+
+        async function stand() {
+            if (status == playing) {
+                status = end
+                if(p1.card[0] == 21){
+                    winAtBlackjack(p1)
+                    p1.winner = 10             
+                    console.log("BlackJack")
+                }else if (p1.card[0] > 21) {
+                    lose(p1) //1
+                    p1.winner = -5
+                    console.log("プレイヤーのバースト")
+                } else if (deal.card[0] > 21) {
+                    win(p1)  //2
+                    console.log("ディーラーのバースト")
+                } else if (p1.card[0] > deal.card[0]) {
+                    win(p1) 
+                    p1.winner = 5
+                    console.log("合計値勝ち")
+                } else if (p1.card[0] < deal.card[0]) {
+                    lose(p1) 
+                    p1.winner = 1
+                    console.log("合計値負け")
+                } else if (p1.card.length > deal.card.length) {
+                    lose(p1) 
+                    console.log("枚数負け")
+                } else if (p1.card.length < deal.card.length) {
+                    win(p1) 
+                    p1.winner = 4
+                    console.log("枚数勝ち")
+                } else {
+                    draw(p1) 
+                    p1.winner = 2
+                    console.log("引き分け")
+                }
+
+                if(p2.card[0] == 21){
+                    winAtBlackjack(p2)
+                    p2.winner = 10
+                    console.log("BlackJack")
+                }else if (p2.card[0] > 21) {
+                    lose(p2) //1
+                    p2.winner = -5
+                    console.log("プレイヤーのバースト")
+                } else if (deal.card[0] > 21) {
+                    win(p2)  //2
+                    console.log("ディーラーのバースト")
+                } else if (p2.card[0] > deal.card[0]) {
+                    win(p2) 
+                    p2.winner = 5
+                    console.log("合計値勝ち")
+                } else if (p2.card[0] < deal.card[0]) {
+                    lose(p2) 
+                    p2.winner = 1
+                    console.log("合計値負け")
+                } else if (p2.card.length > deal.card.length) {
+                    lose(p2) 
+                    console.log("枚数負け")
+                } else if (p2.card.length < deal.card.length) {
+                    win(p2) 
+                    p2.winner = 4
+                    console.log("枚数勝ち")
+                } else {
+                    draw() 
+                    p2.winner = 2
+                    console.log("引き分け")
+                }
+            }
+
+            //home表示
+            if(p1.winner > p2.winner){
+                //p1 win
+            }else if(p1.winner < p2.winner){
+                //p2 win
+            }else{
+                //draw
+            }
+
+            animation()
+
+        }
+
+
+        let newcard = 0
+        //カードを1枚配る
+        function distribution(p) {
+
+            //乱数でカードを引く
+            do {
+                newcard = Math.floor(Math.random() * 51 + 1)
+            } while (already[newcard] == 1);
+            already[newcard] = 1
+
+            p.card.push(newcard)
+            console.log(p.id + " 追加:" + newcard + " スート:" + Math.ceil(newcard / 13) + " 数字:" + (newcard % 13))
+            display(newcard, p)//表示
+            calc(newcard % 13, p)//合計値計算
+        }
+
+        //負けた時の処理
+        function lose(p) {
+            // var target = document.getElementById("fadeLayer");
+            // target.style.visibility = "visible";
+
+            //alert(p.name + " Lose...\nディーラーの手札は" + deal.card[0] + "でした")
+            if (p.name == playername1) {
+                //p1areaあたりに画像
+                document.getElementById("p1aniname").innerText = p1.name
+                document.getElementById("p1animsg").innerText = "Lose..."
+                document.getElementById("p1animsg").classList.add("blue")
+
+            } else if (p.name == playername2) {
+                document.getElementById("p2aniname").innerText = p2.name
+                document.getElementById("p2animsg").innerText = "Lose..."
+                document.getElementById("p2animsg").classList.add("blue")
+            }
+
+        }
+
+        //勝った時の処理
+        function win(p) {
+            //alert(p.name+"\nYou win!\nディーラーの手札は" + deal.card[0] + "でした")
+            // var target = document.getElementById("fadeLayer");
+            // target.style.visibility = "visible";
+
+            if (p.name == playername1) {
+                //p1areaあたりに画像
+                document.getElementById("p1aniname").innerText = p1.name
+                document.getElementById("p1animsg").innerText = "Win!"
+                document.getElementById("p1animsg").classList.add("red")
+
+            } else if (p.name == playername2) {
+                document.getElementById("p2aniname").innerText = p2.name
+                document.getElementById("p2animsg").innerText = "Win!"
+                document.getElementById("p2animsg").classList.add("red")
+
+            }
+
+        }
+
+        function winAtBlackjack(p) {
+            // var target = document.getElementById("fadeLayer");
+            // target.style.visibility = "visible";
+
+            //alert(p.name + "\nYou win!\nブラックジャックです")
+            if (p.name == playername1) {
+                //p1areaあたりに画像
+                document.getElementById("p1aniname").innerText = p1.name
+                document.getElementById("p1animsg").innerText = "Blackjack"
+                document.getElementById("p1animsg").classList.add("green")
+
+            } else if (p.name == playername2) {
+                document.getElementById("p2aniname").innerText = p2.name
+                document.getElementById("p2animsg").innerText = "BlackJack"
+                document.getElementById("p2animsg").classList.add("green")
+
+            }
+            standflag(p)
+
+        }
+
+        function draw(p) {
+            // var target = document.getElementById("fadeLayer");
+            // target.style.visibility = "visible";
+
+            //alert(p.name+"\ndraw\nディーラーの手札は" + deal.card[0] + "でした")
+            status = end
+            if (p.name == playername1) {
+                //p1areaあたりに画像
+                document.getElementById("p1aniname").innerText = p1.name
+                document.getElementById("p1animsg").innerText = "Draw"
+                document.getElementById("p1animsg").classList.add("green")
+
+            } else if (p.name == playername2) {
+                document.getElementById("p2aniname").innerText = p2.name
+                document.getElementById("p2animsg").innerText = "Draw"
+                document.getElementById("p2animsg").classList.add("green")
+
+                
+            }
+        }
+
+        function animation(){
+            
+            target.style.visibility = "visible";
+            target.style.display = "block"
+
+            $(".animation").lettering();
+            var title1 = new TimelineMax();
+            title1.staggerFromTo(".animation span", 0.5,
+                { ease: Back.easeOut.config(1.7), opacity: 0, bottom: -80 },
+                { ease: Back.easeOut.config(1.7), opacity: 1, bottom: 0 }, 0.05);
+
+            document.getElementById("replay").className = "active"
+
+            setTimeout(function fadeout(){
+                $("#fadeLayer").fadeOut(2000);
+                $(".container").fadeOut(2000);
+            },5000);
+            setTimeout(function fade(){
+                target.style.visibility = "hidden";
+            },7000);
+        
+        }
+
+
+        //手札の合計値の計算
+        function calc(num, p) {
+            if (num == 0 || num == 10 || num == 11 || num == 12) {//10~13,1
+                p.card[0] += 10
+            } else if (num == 1) {
+                if (p.card[0] + 11 > 21) {
+                    p.card[0] += 1
+                } else {
+                    p.card[0] += 11
+                    p.Ace++
+                }
+
+            } else {
+                p.card[0] += num
+            }
+
+            //カードの合計値が21を超えてしまった時点で、その場で負けが確定する
+
+            if (p.card[0] > 21) {
+                if (p.Ace != 0) {
+                    p.card[0] -= 9
+                    p.Ace--
+                } else {
+                    standflag(p)
+                }
+            }
+
+        
+        if (p.id == "p1") {
+            document.getElementById("p1point").innerText = p.card[0]
+        } else if (p.id == "p2") {
+            document.getElementById("p2point").innerText = p.card[0]
+        } else if (p.id == "d"){
+            document.getElementById("point-d").innerText = p.card[0]
+        }
+
+        console.log(p.name + " 合計値:" + p.card[0])
+
+
+
+        }
+
+
+        //引いたカードを画面に表示する
+        function display(num, p) {
+            let suit;
+            if (Math.ceil(num / 13) == 1) {
+                suit = "heart"
+
+            } else if (Math.ceil(num / 13) == 2) {
+                suit = "diamond"
+
+            } else if (Math.ceil(num / 13) == 3) {
+                suit = "club"
+
+            } else if (Math.ceil(num / 13) == 4) {
+                suit = "spade"
+
+            }
+
+            let lank
+            if (num % 13 == 0) {
+                lank = 13
+            } else if (num % 13 == 10 || num % 13 == 11 || num % 13 == 12) {
+                lank = num % 13
+            } else {
+                lank = "0" + num % 13
+            }
+            isrc = "cards/card_" + suit + "_" + lank + ".png"
+
+            //document.getElementById('p1').innerHTML = '<img src=isrc alt="サンプル画像">';
+            let id
+            if (p.name == "deal") {
+                id = "d" + (p.card.length - 1)
+                document.getElementById(id).className = "d active"
+            } else if (p.id == "p1") {
+                id = "p1-" + (p.card.length - 1)
+                document.getElementById(id).className = "p active"
+
+            } else if (p.id == "p2") {
+                id = "p2-" + (p.card.length - 1)
+                document.getElementById(id).className = "p active"
+
+            }
+            var img = document.getElementById(id)
+            img.src = isrc
+            console.log(id + " " + isrc + "を表示")
+        }
+
+        //animation
+        $(document).ready(function () {
+            $(".animation").lettering();
+        });
+
+        function goHome(){
+            location.href = "../home.html";
+            //ここに遷移するhtmlを書き込む
+        }
+
+    </script>
+
+</head>
+
+<body onload="init()">
+    <button type="button" onclick="goHome()" id="home"><img
+            src="img/home.png" width="50px"
+            height="50px"alt=""></button>
+    <img src="img/dealerpic.png" alt="" id="dealerpic">
+    <div id="fadeLayer"></div>
+    <div class="box">
+        
+        <div class=head>BlackJack</div>
+        <div class="dealers">
+            <img src="img/dealerpic.png" alt="" id="dealerpic">
+            Dealerの手札の合計値は<span id="point-d">0</span>です
+        </div>
+
+        <div id="DealerCard" class="dealercard">
+            <img id="d1" alt="" class="d active">
+            <img id="d2" alt="" class="d passive">
+            <img id="d3" alt="" class="d passive">
+            <img id="d4" alt="" class="d passive">
+            <img id="d5" alt="" class="d passive">
+            <img id="d6" alt="" class="d passive">
+            <img id="d7" alt="" class="d passive">
+            <img id="d8" alt="" class="d passive">
+            <img id="d9" alt="" class="d passive">
+            <img id="d10" alt="" class="d passive">
+        </div>
+        <div id="PlayerArea" class="playerarea">
+            <div id="p1area">
+                <span class="animation" id="animation1"></span>
+                <div id="p1card">
+                    <img id="p1-1" alt="" class="p active">
+                    <img id="p1-2" alt="" class="p active">
+                    <img id="p1-3" alt="" class="p passive">
+                    <img id="p1-4" alt="" class="p passive">
+                    <img id="p1-5" alt="" class="p passive">
+                    <img id="p1-6" alt="" class="p passive">
+                    <img id="p1-7" alt="" class="p passive">
+                    <img id="p1-8" alt="" class="p passive">
+                    <img id="p1-9" alt="" class="p passive">
+                    <img id="p1-10" alt=""
+                        class="p passive">
+                </div>
+
+                <div class="btn">
+                    <button type="button" id="p1hit"
+                        class="active"
+                        onclick="hit(p1) "><img
+                            src="img/hit.png"
+                            height="100px"></button>
+                    <button type="button" id="p1stand"
+                        class="active"
+                        onclick="standflag(p1)"><img
+                            src="img/stand.png"
+                            height="100px"></button>
+                </div>
+
+                <div class="sum">
+                    <span
+                        id="p1name">ぷれいやー</span>の手札の合計値は<span
+                        id="p1point">0</span>です
+                </div>
+
+                <section class="p1container">
+                    <h1>
+                      <span class="animation" id="p1aniname"></span><br>
+                      <span class="animation" id="p1animsg"></span>
+                    </h1>
+                  </section>
+            </div>
+
+            <div id="p2area">
+                <div id="p2card">
+                    <img id="p2-1" alt="" class="p active">
+                    <img id="p2-2" alt="" class="p active">
+                    <img id="p2-3" alt="" class="p passive">
+                    <img id="p2-4" alt="" class="p passive">
+                    <img id="p2-5" alt="" class="p passive">
+                    <img id="p2-6" alt="" class="p passive">
+                    <img id="p2-7" alt="" class="p passive">
+                    <img id="p2-8" alt="" class="p passive">
+                    <img id="p2-9" alt="" class="p passive">
+                    <img id="p2-10" alt=""
+                        class="p passive">
+                </div>
+
+                <div class="btn">
+                    <button type="button" id="p2hit"
+                        class="active"
+                        onclick="hit(p2) "><img
+                            src="img/hit.png"
+                            height="100px"></button>
+                    <button type="button" id="p2stand"
+                        class="active"
+                        onclick="standflag(p2)"><img
+                            src="img/stand.png"
+                            height="100px"></button>
+                </div>
+
+                <div class="sum">
+                    <span
+                        id="p2name">ぷれいやー</span>の手札の合計値は<span
+                        id="p2point">0</span>です
+                </div>
+
+                <section class="p2container">
+                    <h1>
+                      <span class="animation" id="p2aniname"></span><br>
+                      <span class="animation" id="p2animsg"></span>
+                    </h1>
+                  </section>
+            </div>
+        </div>
+
+        <div id="fadeLayer"></div>
+
+        <button type="button" id="replay" class="passive"
+            onclick="init()"><img
+                src="img/replay.png" height="100px"></button>
+    
+
+    <p>
+        Hit・・・カードを引くことができます<br>
+        Stand・・・カードを引くのをやめ，ディーラーと勝負します<br>
+        ディーラーは手札が16になるまでヒットし続け,17を超えると必ずスタンドします
+
+    </p>
+
+    <link rel="stylesheet" href="css/lightbox.min.css">
+
+    <a href="img/hatena.png" rel="lightbox">
+        <button id="hatena">
+            <img src="img/hatena.png" width="50px" height="50px">
+        </button>
+    </a>
+
+    <script src="js/lightbox.min.js"></script>
+    </div>
+
+</body>
+
+</html>
+
+
+<!-- 
+    ディーラーとプレイヤーのカードがひとめで区別がつかない
+    カードをめくるやつ
+    winが2回出る
+ -->

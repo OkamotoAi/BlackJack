@@ -1,0 +1,81 @@
+@import url(https://fonts.googleapis.com/css?family=Fjalla+One);
+html {
+  height: 100%;
+}
+
+body {
+  font-family: 'Fjalla One', sans-serif;
+  /*
+  background: -webkit-gradient(linear, left top, left bottom, from(#405166), to(#656f6f));
+  background: linear-gradient(to bottom, #405166 0%, #656f6f 100%);
+  */
+}
+
+.container {
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  top: 45%;
+  left: 50%;
+  display: block;
+  position: absolute;
+  max-width: 100%;
+  z-index: 2;
+}
+
+h1 {
+  color: #fff;
+  text-transform: uppercase;
+  font-size: 70px;
+  margin: 0;
+  line-height: 65px;
+}
+
+.animation {
+  -webkit-transform: translateX(-50%) rotate(-10deg);
+  transform: translateX(-50%) rotate(-10deg);
+  display: block;
+  float: left;
+  top: 20%;
+  left: 50%;
+  position: relative;
+}
+
+.animation span {
+  -webkit-transform: skew(-10deg);
+  transform: skew(-10deg);
+  display: block;
+  float: left;
+  text-shadow: #533d4a 1px 1px, #533d4a 2px 2px, #533d4a 3px 3px, #533d4a 4px 4px, #533d4a 5px 5px, #533d4a 6px 6px;
+  min-width: 10px;
+  min-height: 10px;
+  position: relative;
+  letter-spacing: 5px;
+}
+
+#fadeLayer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  opacity: 0.7;
+  visibility: hidden;
+  z-index: 1;
+}
+
+.animation:nth-child(1) {
+  color: #f1c83c;
+}
+.red{
+  color: #e55643;
+}
+.blue{
+  color: #435ee5;
+}
+.green{
+  color: #2b9f5e;
+}
+
+
+/*# sourceMappingURL=animation.css.map */

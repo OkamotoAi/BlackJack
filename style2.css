@@ -1,25 +1,15 @@
 　*{
     margin: 0;
     padding: 0;
-    width: 100%;
     border: 0;
+    width: 100%;
     font-size: 100%;
     font: inherit;
     vertical-align: baseline;
     
 }
 
-
-#home{
-    font-size:200%;
-    width:80px;
-    height:80px;
-    background: transparent;
-}
-
-
-#hit,#stand,#replay{
-    margin:10%;
+#p1hit,#p1stand,#p2hit,#p2stand,#replay{
     height: 100px;
     width: auto;
     padding:0;
@@ -30,8 +20,14 @@
     line-height:0;
     overflow:visible;
     cursor:pointer;
-    margin-left: 10%;
 
+}
+
+#home{
+    font-size:200%;
+    width:80px;
+    height:80px;
+    background: transparent;
 }
 
 body{
@@ -52,6 +48,7 @@ body{
     font-size:90px;
     font-family:'HeadLineA';
     padding:10px;
+    
 }
 
 .btn{
@@ -63,13 +60,23 @@ body{
 
 
 .d{
-    width:100px;
+    height:100px;
 }
 
 .p{
-    width: 100px;
+    height: 100px;
 }
 
+#PlayerArea{
+    display: flex;
+}
+
+#p1area{
+    left:0%
+}
+#p2area{
+    left:50%;
+}
 
 
 #home{
@@ -88,24 +95,17 @@ body{
     margin-bottom: 100px;
 }
 
-.playercard{
+#p1card,#p2card{
     display: flex;
     flex-direction:row;
     align-items: center;
     justify-content: center;
-     
-    
+    flex-wrap: wrap;
 }
 
-.passive{
-    display: none;
-}
 
-.active{
-    display: block;
-}
 
-#point,#point-d{
+#p1point,#p2point,#point-d{
     font-size:50px;
     font-family:'HeadLineA';
 }
@@ -119,4 +119,39 @@ body{
     height: 90px;
     top: 110px;
     left:35%;
+}
+
+
+.passive{
+    display: none;
+}
+
+.active{
+    display: block;
+}
+
+#hatena{
+    background: transparent;
+    position: absolute;
+    top: 15px;
+    left: 100px;
+    z-index: 1;
+}
+
+#fadeLayer {
+    position:absolute;
+    top:0px;
+    left:0px;
+
+    width:100%;
+    height:100%;
+
+    background-color:#000000;
+    opacity:0.7;
+    visibility:hidden;
+    z-index:1;
+}
+
+.container{
+    z-index:2;
 }
