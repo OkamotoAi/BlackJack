@@ -6,28 +6,35 @@
     </head>
     <p id="player" style="width:700px;height:50px;font-size : 250%;display: block">プレイヤーの名前を入力してね</p>
     <input type="text" id="name1"  style="width:300px;height:50px; display: block; font-size: 250%">
-    <p id="hyouji1" style="width:500px;height:50px;font-size : 200%;display: block">プレイヤー</p>
-    <button id="home" style="font-size:200%; width:80px; height:80px"onclick="goHome()">
-    <img src="img/home.png" width="50px" height="50px">
+    <input type="text" id="name2" style="width:300px;height:50px; display: block; font-size: 250%">
+    <p id="hyouji1" style="width:500px;height:50px;font-size : 200%;display: block">プレイヤー１</p>
+    <p id="hyouji2" style="width:500px;height:50px;font-size : 200%;display: block">プレイヤー２</p>
+    <button id="home" style="font-size:200%; width:80px; height:80px"onclick="()">
+    <img src="img/home.png" width="50px" height="50px">goHome
     </button>
-    <button id="submit" style="font-size:200%; width:100px; height:50px"onclick="click()">決定</button>
-    <script type="text/javascript">
+    <button id="submit" style="font-size:200%; width:100px; height:50px">決定</button>
+    <script>
         let P_name1 = document.getElementById("name1");
-        P_name1.value = "プレイヤー";
-        
+        // let value1 = P_name1.value;
+        let P_name2 = document.getElementById("name2");
+        // let value2 = P_name2.value;
+        P_name1.value = "プレイヤー１";
+        P_name2.value = "プレイヤー２";
+
         document.getElementById("submit").addEventListener("click", () => {
             let value1 = P_name1.value;
-            sessionStorage.setItem("playerName",value1);
-            location.href = "main.html";
+            sessionStorage.setItem("playerName1",value1);
+            let value2 = P_name2.value;
+            sessionStorage.setItem("playerName2",value2);
+            location.href = "2player.html";
             //ここに遷移するhtmlを書き込む
         });
-        
+
     </script>
-    <script type="text/javascript" src="PlayerName_1.html"></script>
     <style>
         body{
-            background-image: url(images/back_1.jpg);
-            background-size:1250px;
+            background-image: url(images/back_2.jpg);
+            background-size:1350px;
             background-color:rgba(255,255,255,0.7);
             background-blend-mode:lighten;
         }
@@ -52,7 +59,15 @@
         #name1{
             position: absolute;
             top: 100px;
-            left: 0px;
+            left: -400px;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+        }
+        #name2{
+            position: absolute;
+            top: 100px;
+            left: 400px;
             right: 0;
             bottom: 0;
             margin: auto;
@@ -63,7 +78,17 @@
             top: 0;
             right: 0;
             bottom: 0;
-            left: 300px;
+            left: -80px;
+            margin: auto;
+            font-weight: 700;
+        }
+        #hyouji2{
+            position: absolute;
+            font-family: sans-serif;
+            top: 0;
+            right: -710px;
+            bottom: 0;
+            left: 0;
             margin: auto;
             font-weight: 700;
         }
